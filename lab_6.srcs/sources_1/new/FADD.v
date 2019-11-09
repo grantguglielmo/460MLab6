@@ -5,6 +5,6 @@ wire x0, x1, x2;
 
 HADD(A, B, x0, x1);
 HADD(x0, Cin, S, x2);
-or o(x1, x2, Cout);
+or o(Cout, x1, x2);
 
 endmodule

@@ -11,39 +11,39 @@ wire s13, s23, s33, s14, s24, s34;
 
 
 //calculate partial products
-and partial00(A[0], B[0], P[0]);
+and partial00(P[0], A[0], B[0]);
 
-and partial01(A[0], B[1], p01);
-and partial10(A[1], B[0], p10);
+and partial01(p01, A[0], B[1]);
+and partial10(p10, A[1], B[0]);
 
-and partial02(A[0], B[2], p02);
-and partial11(A[1], B[1], p11);
-and partial20(A[2], B[0], p20);
+and partial02(p02, A[0], B[2]);
+and partial11(p11, A[1], B[1]);
+and partial20(p20, A[2], B[0]);
 
-and partial03(A[0], B[3], p03);
-and partial12(A[1], B[2], p12);
-and partial21(A[2], B[1], p21);
-and partial30(A[3], B[0], p30);
+and partial03(p03, A[0], B[3]);
+and partial12(p12, A[1], B[2]);
+and partial21(p21, A[2], B[1]);
+and partial30(p30, A[3], B[0]);
 
-and partial04(A[0], B[4], p04);
-and partial13(A[1], B[3], p13);
-and partial22(A[2], B[2], p22);
-and partial31(A[3], B[1], p31);
-and partial40(A[4], B[0], p40);
+and partial04(p04, A[0], B[4]);
+and partial13(p13, A[1], B[3]);
+and partial22(p22, A[2], B[2]);
+and partial31(p31, A[3], B[1]);
+and partial40(p40, A[4], B[0]);
 
-and partial14(A[1], B[4], p14);
-and partial23(A[2], B[3], p23);
-and partial32(A[3], B[2], p32);
-and partial41(A[4], B[1], p41);
+and partial14(p14, A[1], B[4]);
+and partial23(p23, A[2], B[3]);
+and partial32(p32, A[3], B[2]);
+and partial41(p41, A[4], B[1]);
 
-and partial24(A[2], B[4], p24);
-and partial33(A[3], B[3], p33);
-and partial42(A[4], B[2], p42);
+and partial24(p24, A[2], B[4]);
+and partial33(p33, A[3], B[3]);
+and partial42(p42, A[4], B[2]);
 
-and partial34(A[3], B[4], p34);
-and partial43(A[4], B[3], p43);
+and partial34(p34, A[3], B[4]);
+and partial43(p43, A[4], B[3]);
 
-and partial44(A[4], B[4], p44);
+and partial44(p44, A[4], B[4]);
 
 HADD S10(p10, p01, P[1], c10);
 HADD S20(p20, p11, s20, c20);
