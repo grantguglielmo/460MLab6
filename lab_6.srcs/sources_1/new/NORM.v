@@ -18,4 +18,9 @@ BUFFIF5 buff2(full_frac[8:4], no_norm, frac);
 BUFFIF5 buff3(full_frac[7:3], right_norm1, frac);
 BUFFIF5 buff4(full_frac[6:2], right_norm2, frac);
 
+BUFFIF3 buff5(3'b001, left_norm, offset);
+BUFFIF3 buff6(3'b000, no_norm, offset);
+BUFFIF3 buff7(3'b111, right_norm1, offset);
+BUFFIF3 buff8(3'b110, right_norm2, offset);
+
 endmodule
