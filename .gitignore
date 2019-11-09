@@ -1,4 +1,6 @@
-*
-!.gitignore
-!lab_6.srcs/*
-!lab_6.runs/impl_1/Top.bit
+lab_6.cache/*
+lab_6.hw/*
+lab_6.ip_user_files/*
+lab_6.sim/*
+lab_6.runs/*
+lab_6.xpr
