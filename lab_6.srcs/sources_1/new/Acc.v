@@ -9,10 +9,17 @@
 module Acc(A, B, Q);
 input[7:0] A, B;
 output[7:0] Q;
-wire nonBiasExpA, nonBiasExpB;
+wire nonBiasExpA, nonBiasExpB, nonBiasExp;
 wire [3:0] sum;
 wire [3:0] tempF_A;
 wire [3:0] tempF_B;
+wire expUnderflowDetector;
+wire expOverflowDetector;
+reg accumulator;
+
+initial begin
+    accumulator <= 0;
+end
 
 assign tempF_A = `F_A;
 assign tempF_B = `F_B;
@@ -33,6 +40,7 @@ assign tempF_B = (`SIGNED_BIT_B) ? -tempF_B : tempF_B;
 
 // Add fractions
 assign sum = (nonBiasExpA == nonBiasExpB) ? (tempF_A + tempF_B) : sum;
+assign nonBiasExp = (nonBiasExpA == nonBiasExpB) ? nonBiasExp : nonBiasExp;
 
 // Check if sum is zero
 assign Q[6:4] = (!sum) ? 3'b100 : Q[6:4];
@@ -44,7 +52,15 @@ assign nonBiasExpA = ((tempF_A + tempF_B) > 3'd7) ? (nonBiasExpA + 1'b1) : nonBi
 assign nonBiasExpB = ((tempF_A + tempF_B) > 3'd7) ? (nonBiasExpB + 1'b1) : nonBiasExpB;
 
 // Normalize fraction
-// Check for exponent overflow
-// Round bits and renormalize if necessary
+assign sum = (sum[3] == sum[2]) ? (sum << 1'b1) : sum;
+assign nonBiasExp = (sum[3] == sum[2]) ? nonBiasExp - 1'b1 : nonBiasExp;
 
+// Check for exponent overflow
+assign expOverflowDetector = ((nonBiasExpA < nonBiasExpB) && ((nonBiasExp + 1'b1) < 0)) ? 1'b1 : 1'b0;
+assign expUnderflowDetector = ((sum[3] == sum[2]) && ((nonBiasExp - 1'b1) > 0)) ? 1'b1 : 1'b0;
+
+// Round bits and renormalize if necessary
+assign Q[7] = (!expOverflowDetector && !expUnderflowDetector && (sum > 0)) ? 1'b0 : 1'b1;
+assign Q[6:4] = (!expOverflowDetector && !expUnderflowDetector) ? (nonBiasExp + 3'd3) : 3'b000;
+assign Q[3:0] = (!expOverflowDetector && !expUnderflowDetector) ? sum : 4'b0000;
 endmodule
