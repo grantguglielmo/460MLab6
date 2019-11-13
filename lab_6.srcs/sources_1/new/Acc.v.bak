@@ -32,7 +32,7 @@ convertFractionToTwosComplement fractionB(`FRACTION_B, tempF_B);
 
 // Compare exponents and shift fraction with smallest exponent when necessary until exponents equal
 matchExponent                exp(nonBiasExpA, nonBiasExpB, nonBiasExp, fractionSelectionFlag);
-shiftFractionwithSmallestExp frac(fractionSelectionFlag, tempF_A, tempF_B, addEnable);
+shiftFractionWithSmallestExp frac(fractionSelectionFlag, tempF_A, tempF_B, addEnable);
 
 // Add fractions
 fractionAdder sum_frac(addEnable, tempF_A, tempF_B, sum);
