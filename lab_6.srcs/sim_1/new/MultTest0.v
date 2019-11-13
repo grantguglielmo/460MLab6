@@ -1,25 +1,62 @@
 module MultTest0();
 reg[7:0] A, B;
-wire[7:0] float;
-reg[2:0] C, D;
-wire[2:0] Sum;
-wire Cout;
-reg[4:0] L, R;
-wire[9:0] Product;
-reg[9:0] lrg_frac;
-wire[4:0] round;
-wire[2:0] offset;
+wire[7:0] Product;
 
-Mult multiplier(A, B, float);
-ADD3 adder(C, D, Sum, Cout);
-MUL5 fixed_mul(L, R, Product);
-NORM normailize(lrg_frac, round, offset);
+Mult multiplier(A, B, Product);
 
 initial begin
     A = 8'b00100011;
     B = 8'b00101111;
+    //0x22
     #100;
+    A = 8'b10111010;
+    B = 8'b00101100;
+    //0xb6
     #100;
+    A = 8'b11100011;
+    B = 8'b10100110;
+    //0x5a
     #100;
+    A = 8'b01100101;
+    B = 8'b00110101;
+    //0x6b
+    #100;
+    A = 8'b01110010;
+    B = 8'b00100111;
+    //0x79
+    #100;
+    A = 8'b01010010;
+    B = 8'b01010001;
+    //0x73
+    #100;
+    A = 8'b00000110;
+    B = 8'b01001101;
+    //0x15
+    #100;
+    A = 8'b00000000;
+    B = 8'b01101111;
+    //0x00
+    #100;
+    A = 8'b00010011;
+    B = 8'b00100101;
+    //0x0c
+    #100;
+    A = 8'b00010010;
+    B = 8'b00010001;
+    //0x04
+    #100;
+    A = 8'b10000000;
+    B = 8'b00000000;
+    //0x80 or 0x00 not sure about -0
+    #100;
+    A = 8'b00001101;
+    B = 8'b00000101;
+    //0x01
+    #100;
+    A = 8'b00000101;
+    B = 8'b00000101;
+    //0x00
+    #100;
+    $finish;
 end
 endmodule

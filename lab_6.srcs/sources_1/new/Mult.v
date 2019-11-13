@@ -13,8 +13,8 @@ xor x0(Q[7], A[7], B[7]);  //sign
 ADD3 comp0(A[6:4], 3'b101, a_exp, c0);              //remove bias from exp, 2's comp
 ADD3 comp1(B[6:4], 3'b101, b_exp, c1);
 
-or or0(norma, a_exp[2], a_exp[1], a_exp[0]);        //check if normalized A or B
-or or1(normb, b_exp[2], b_exp[1], b_exp[0]);
+or or0(norma, A[6], A[5], A[4]);                    //check if normalized A or B
+or or1(normb, B[6], B[5], B[4]);
 
 SEXT sext0(norma, a_exp, exp_a);                    //SEXT exp's and check underflow
 SEXT sext1(normb, b_exp, exp_b);
