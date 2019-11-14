@@ -11,49 +11,60 @@
 module Acc(A, B, Q);
 input[7:0] A, B;
 output[7:0] Q;
-wire [2:0] nonBiasExpA, nonBiasExpB, nonBiasExp;
-wire [1:0] fractionSelectionFlag;
-wire       addEnable;
-wire [3:0] sum;
-wire       endOperationFlag;
-wire [4:0] tempF_A;
-wire [4:0] tempF_B;
-wire [4:0] shiftedFraction;
-wire expUnderflowDetector;
-wire expOverflowDetector;
 
-// Get non-biased exponent
+wire [2:0] nonBiasExpA, nonBiasExpB, nonBiasExp;
+wire [2:0] incrExp, normExp;
+wire [3:0] fractionBitsA, sFracA;
+wire [3:0] fractionBitsB, sFracB;
+wire [3:0] addFractionBitsA;
+wire [3:0] addFractionBitsB;
+wire [1:0] fractionSelectionFlag;
+wire [3:0] sum;
+wire [3:0] shiftedSum, normSum;
+wire       addEnable;
+wire       endOperationFlag;
+wire       expUnderflowDetector;
+wire       expOverflowDetector;
+
+// Example: A = 10.0 and B = 0.1 (A = 2 and B = 0.5)
+//          A = 1.0 x 2^(1) B = 1.0 x 2^(-1)
+//          A = 1.0 x 2^(1) B = 0.001 x 2^(1)
+
+// Get non-biased exponent from IEEE format
 getNonBiasExp expA(`EXPONENT_A, nonBiasExpA);
 getNonBiasExp expB(`EXPONENT_B, nonBiasExpB);
 
-// Convert to 2's complement
-convertFractionToTwosComplement fractionA(`FRACTION_A, tempF_A);
-convertFractionToTwosComplement fractionB(`FRACTION_B, tempF_B);
+assign fractionBitsA = `FRACTION_A;
+assign fractionBitsB = `FRACTION_B;
 
 // Compare exponents and shift fraction with smallest exponent when necessary until exponents equal
 matchExponent                exp(nonBiasExpA, nonBiasExpB, nonBiasExp, fractionSelectionFlag);
-shiftFractionwithSmallestExp frac(fractionSelectionFlag, tempF_A, tempF_B, addEnable);
+shiftFractionwithSmallestExp frac(fractionSelectionFlag, fractionBitsA, fractionBitsB, sFracA, sFracB, addEnable);
 
 // Add fractions
-fractionAdder sum_frac(addEnable, tempF_A, tempF_B, sum);
+assign addFractionBitsA = (`SIGNED_BIT_A) ? (-sFracA) : sFracA;
+assign addFractionBitsB = (`SIGNED_BIT_B) ? (-sFracB) : sFracB;
 
-// Check if sum is zero
-checkZeroFromSum checkSum(sum, endOperationFlag, Q);
+fractionAdder sum_frac(addEnable, addFractionBitsA, addFractionBitsB, sum);
+
+// Check if sum is zero; if zero, set endOperationFlag signal 
+checkZeroFromSum checkSum(sum, endOperationFlag);
 
 // If fraction overflow occurs, shift f to right by one and add one to exponent
-shiftFractionWhenOverflow shiftFraction(endOperationFlag, tempF_A, tempF_B, sum, nonBiasExp);
+shiftFractionWhenOverflow shiftFraction(endOperationFlag, sum, nonBiasExp, addFractionBitsA, addFractionBitsB, shiftedSum, incrExp);
 
 // Normalize fraction
-normFrac normalize(endOperationFlag, sum, nonBiasExp);
+normFrac normalize(endOperationFlag, shiftedSum, incrExp, normSum, normExp);
 
 // Check for exponent overflow
-assign expOverflowDetector = ((nonBiasExpA < nonBiasExpB) && ((nonBiasExp + 1'b1) < 0)) ? 1'b1 : 1'b0;
-assign expUnderflowDetector = ((sum[3] == sum[2]) && ((nonBiasExp - 1'b1) > 0)) ? 1'b1 : 1'b0;
+assign expOverflowDetector = ((nonBiasExpA < nonBiasExpB) && ((normExp + 1'b1) < 0) && !endOperationFlag) ? 1'b1 : 1'b0;
+assign expUnderflowDetector = ((normSum[3] == normSum[2]) && ((normExp - 1'b1) > 0) && !endOperationFlag) ? 1'b1 : 1'b0;
 
 // Round bits and renormalize if necessary
-assign Q[7] = (!expOverflowDetector && !expUnderflowDetector && (sum > 0)) ? 1'b0 : 1'b1;
-assign Q[6:4] = (!expOverflowDetector && !expUnderflowDetector) ? (nonBiasExp + 3'd3) : 3'b000;
-assign Q[3:0] = (!expOverflowDetector && !expUnderflowDetector) ? sum : 4'b0000;
+assign Q[7] = ((!expOverflowDetector && !expUnderflowDetector && (normSum > 0)) || endOperationFlag) ? 1'b0 : 1'b1;
+assign Q[6:4] = (!expOverflowDetector && !expUnderflowDetector && !endOperationFlag) ? (normExp + `BIAS) 
+                    : (endOperationFlag) ? 3'b100 : 3'b000;
+assign Q[3:0] = (!expOverflowDetector && !expUnderflowDetector && !endOperationFlag) ? normSum : 4'b0000;
 endmodule
 
 module getNonBiasExp(biasExp, nonBiasExp);
@@ -63,17 +74,9 @@ module getNonBiasExp(biasExp, nonBiasExp);
     assign nonBiasExp = biasExp - `BIAS;
 endmodule
 
-module convertFractionToTwosComplement(fractionBits, signedBit, twosComplementFraction);
-    input [3:0] fractionBits;
-    input signedBit;
-    output wire [4:0] twosComplementFraction;
-    
-    assign twosComplementFraction = (signedBit) ? {1'b1, (~fractionBits) + 1'b1} : {1'b0, fractionBits}; 
-endmodule
-
 module matchExponent(exponentA, exponentB, incrementedExp, fractionSelectionFlag);
     input [2:0] exponentA, exponentB;
-    output wire incrementedExp; 
+    output wire [2:0] incrementedExp; 
     output wire [1:0] fractionSelectionFlag;
     
     assign incrementedExp = 
@@ -84,49 +87,55 @@ module matchExponent(exponentA, exponentB, incrementedExp, fractionSelectionFlag
        (exponentA > exponentB) ? 2'b01 : 2'b10;
 endmodule
 
-module shiftFractionwithSmallestExp(fractionSelectionFlag, fractionA, fractionB, addEnable);
+module shiftFractionwithSmallestExp(fractionSelectionFlag, fractionA, fractionB, sFracA, sFracB, addEnable);
     input [1:0] fractionSelectionFlag;
-    inout [4:0] fractionA, fractionB;
+    input [3:0] fractionA, fractionB;
+    wire  [3:0] tempF_A, tempF_B;
+    output [3:0] sFracA, sFracB;
     output addEnable;
     
-    assign fractionA = (!fractionSelectionFlag) ? (fractionA >> 1'b1) : fractionA;
-    assign fractionB = (fractionSelectionFlag == 2'b01) ? (fractionB >> 1'b1) : fractionB;
+    assign tempF_A = fractionA;
+    assign tempF_B = fractionB;
+    
+    assign sFracA = (!fractionSelectionFlag) ? (tempF_A >> 1'b1) : tempF_A;
+    assign sFracB = (fractionSelectionFlag == 2'b01) ? (tempF_B >> 1'b1) : tempF_B;
     assign addEnable = (fractionSelectionFlag == 2'b10) ? 1'b1 : 1'b0;
 endmodule
 
 module fractionAdder(addEnable, fractionA, fractionB, sum);
     input addEnable;
-    input [4:0] fractionA, fractionB, sum;
+    input [3:0] fractionA, fractionB; 
+    output [3:0] sum;
     
     assign sum = (addEnable) ? (fractionA + fractionB) : 4'b0000;
 endmodule
 
-module checkZeroFromSum(sum, endOperationFlag, Q);
+module checkZeroFromSum(sum, endOperationFlag);
     input sum;
     output endOperationFlag;
-    output [7:0] Q;
     
-    assign Q[7] = (!sum) ? 1'b0: Q[7];
-    assign Q[6:4] = (!sum) ? 3'b100 : Q[6:4];
-    assign Q[3:0] = (!sum) ? 4'b0000 : Q[3:0]; 
     assign endOperationFlag = (!sum) ? 1'b1 : 1'b0;
 endmodule
 
-module shiftFractionWhenOverflow(endOperationFlag, fractionA, fractionB, sum, exponent);
+module shiftFractionWhenOverflow(endOperationFlag, origSum, biasExp, fractionA, fractionB, sum, exponent);
     input endOperationFlag;
-    input [4:0] fractionA, fractionB;
-    inout [4:0] sum;
-    inout [2:0] exponent;
+    input [3:0] fractionA, fractionB;
+    input [2:0] biasExp;
+    input [3:0] origSum;
+    output [3:0] sum;
+    output [2:0] exponent;
     
-    assign sum = (((fractionA + fractionB) > 3'd7) && !endOperationFlag) ? sum >> 1 : sum;
-    assign exponent = (((fractionA + fractionB) > 3'd7) && !endOperationFlag) ? (exponent + 1'b1) : exponent;
+    assign sum = (((fractionA + fractionB) > 3'd7) && !endOperationFlag) ? origSum >> 1 : origSum;
+    assign exponent = (((fractionA + fractionB) > 3'd7) && !endOperationFlag) ? (biasExp + 1'b1) : biasExp;
 endmodule
 
-module normFrac(endOperationFlag, sum, exponent);
+module normFrac(endOperationFlag, sum, exponent, normSum, normExp);
     input endOperationFlag;
-    inout [4:0] sum;
-    inout [2:0] exponent;
+    input [3:0] sum;
+    input [2:0] exponent;
+    output [3:0] normSum;
+    output [2:0] normExp;
     
-    assign sum = ((sum[3] == sum[2]) && (!endOperationFlag)) ? (sum << 1'b1) : sum;
-    assign exponent = ((sum[3] == sum[2]) && (!endOperationFlag)) ? exponent - 1'b1 : exponent;
+    assign normSum = ((sum[3] == sum[2]) && (!endOperationFlag)) ? (sum << 1'b1): sum;
+    assign normExp = ((sum[3] == sum[2]) && (!endOperationFlag)) ? (exponent - 1'b1) : exponent;
 endmodule
