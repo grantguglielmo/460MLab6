@@ -76,6 +76,10 @@ module AddTest0();
         B = 8'b11101000;
         //0xfc
         #100;
+        A = 8'b11010100;
+        B = 8'b01011000;
+        //0x30
+        #100;
         $finish;
     end
 endmodule

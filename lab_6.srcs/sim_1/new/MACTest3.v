@@ -1,4 +1,4 @@
-module MACTest0();
+module MACTest3();
 reg CLK, start;
 reg[7:0] A [2:0] [2:0];
 reg[7:0] B [2:0] [2:0];
@@ -52,6 +52,5 @@ initial begin
     start = 0;
     #790;
     $finish;
-    //Ans: all 0x4f
 end
 endmodule
