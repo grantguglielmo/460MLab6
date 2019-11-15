@@ -1,18 +1,22 @@
 module DFF(D, CLK, Q, Qn);
 input D, CLK;
 output Q, Qn;
-wire CLKn;
+wire CLKn, Qi, Qni, Dn;
 wire w0, w1, w2, w3, w4, w5;
 
 not inv(CLKn, CLK);
+not inv1(Dn, D);
 
-nand n0(w0, D, CLK);
-nand n1(w1, w0, CLK);
-nand n2(w2, w0, w3);
-nand n3(w3, w1, w2);
-nand n4(w4, w2, CLKn);
-nand n5(w5, w3, CLKn);
-nand n6(Q, w4, Qn);
-nand n7(Qn, w5, Q);
+and n0(w0, D, CLKn);
+and n1(w1, Dn, CLKn);
+nor n2(w2, w0, w3);
+nor n3(w3, w1, w2);
+and n4(w4, w2, CLK);
+and n5(w5, w3, CLK);
+nor n6(Qi, w4, Qn);
+nor n7(Qni, w5, Q);
+
+assign Q = (Qi === 1'bX) ? 1'b0 : Qi;
+assign Qn = (Qni === 1'bX) ? 1'b1 : Qni;
 
 endmodule

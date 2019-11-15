@@ -1,7 +1,7 @@
 module Top(CLK, Start, Ai, Bi, N);
 input CLK, Start;
 input[71:0] Ai, Bi;
-output reg[71:0] N;
+output wire[71:0] N;
 reg[2:0] run;
 reg[7:0] a0, a1, a2, b0, b1, b2;
 wire[7:0] r00, r01, r02, r10, r11, r12, r20, r21, r22;
