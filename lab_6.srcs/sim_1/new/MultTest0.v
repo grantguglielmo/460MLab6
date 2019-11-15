@@ -57,6 +57,10 @@ initial begin
     B = 8'b00000101;
     //0x00
     #100;
+    A = 8'b01111111;
+    B = 8'b01111111;
+    //0x7e
+    #100;
     $finish;
 end
 endmodule

@@ -9,6 +9,6 @@ Reg8 b(top, CLK, bottom);     //pass top to bottom
 Reg8 o(acc, CLK, out);        //store mac value to out
 
 Mult m(left, top, mult);    //multiply left and top
-Acc a(mult, out, acc);      //add product to prev out
+Acc0 a(mult, out, acc);      //add product to prev out
 
 endmodule

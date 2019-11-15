@@ -29,6 +29,6 @@ NORMF normalize(frac, norm_frac, offset);
 ADD4 add_off(exp_norm, offset, exp_no_bias, c3);
 ADD3 add_bias(exp_no_bias[2:0], 3'b011, exp_bias, c4);
 
-EDGE edge_case(exp_no_bias, exp_bias, norm_frac, Q[6:4], Q[3:0]);
+EDGE edge_case(A[6:4], B[6:4], exp_no_bias, exp_bias, norm_frac, Q[6:4], Q[3:0]);
 
 endmodule

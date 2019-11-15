@@ -5,7 +5,7 @@ output[3:0] comp_e, exp_norm;
 wire[3:0] comp_a, comp_b, comp, inv_a, inv_b;
 wire a_lrg, c0, c1, c2;
 
-assign aorb = exp_a >= exp_b;
+assign aorb = $signed(exp_a) >= $signed(exp_b);
 
 assign inv_a = ~exp_a;
 assign inv_b = ~exp_b;
