@@ -49,5 +49,8 @@ module AddTest0();
         A = 8'b00000000; // x00
         B = 8'b00000000; // x00 // Another 000 exp test case
         #100;
+        A = 8'b01111111; // x7F
+        B = 8'b01111111; // x7F // Another 000 exp test case
+        #100;
     end
 endmodule
