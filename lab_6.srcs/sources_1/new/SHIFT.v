@@ -11,14 +11,14 @@ and and1(left1a, !comp_exp[3], !comp_exp[2], !comp_exp[1], comp_exp[0], !aorb);
 and and2(left2a, !comp_exp[3], !comp_exp[2], comp_exp[1], !comp_exp[0], !aorb);
 and and3(left3a, !comp_exp[3], !comp_exp[2], comp_exp[1], comp_exp[0], !aorb);
 and and4(left4a, !comp_exp[3], comp_exp[2], !comp_exp[1], !comp_exp[0], !aorb);
-and and5(left5a, !comp_exp[3], comp_exp[2], !comp_exp[1], comp_exp[0], !aorb);
+nor nor0(left5a, aorb, left0a, left1a, left2a, left3a, left4a);
 
 and and6(left0b, !comp_exp[3], !comp_exp[2], !comp_exp[1], !comp_exp[0], aorb);
 and and7(left1b, !comp_exp[3], !comp_exp[2], !comp_exp[1], comp_exp[0], aorb);
 and and8(left2b, !comp_exp[3], !comp_exp[2], comp_exp[1], !comp_exp[0], aorb);
 and and9(left3b, !comp_exp[3], !comp_exp[2], comp_exp[1], comp_exp[0], aorb);
 and and10(left4b, !comp_exp[3], comp_exp[2], !comp_exp[1], !comp_exp[0], aorb);
-and and11(left5b, !comp_exp[3], comp_exp[2], !comp_exp[1], comp_exp[0], aorb);
+nor nor1(left5b, !aorb, left0b, left1b, left2b, left3b, left4b);
 
 BUFFIF5 b0(in_a, aorb, frac_a);
 BUFFIF5 b1(in_a, left0a, frac_a);
